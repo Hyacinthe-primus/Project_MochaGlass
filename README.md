@@ -88,18 +88,18 @@ Komorebi in action across different layouts and wallpapers.
 
 ### Wallpapers
 
-The set currently cycled by the `wallpapers` widget, stored in `wallpapers/`.
+The set currently cycled by the `wallpapers` widget, stored in `Wallpapers/`.
 
 | | | |
 |---|---|---|
-| ![Broken Vessel](wallpapers/Broken%20Vessel.jpg) | ![Manjusaka](wallpapers/Manjusaka.jpg) | ![Shenhe](wallpapers/Shenhe.jpg) |
+| ![Broken Vessel](Wallpapers/Broken%20Vessel.jpg) | ![Manjusaka](Wallpapers/Manjusaka.jpg) | ![Shenhe](Wallpapers/Shenhe.jpg) |
 | Broken Vessel | Manjusaka | Shenhe |
-| ![Silver Wolf](wallpapers/Silver%20Wolf.jpeg) | ![Gogeta SSJ4](wallpapers/gogeta_ssj4.jpg) | ![Linux Friends](wallpapers/linux-friends-4k.png) |
+| ![Silver Wolf](Wallpapers/Silver%20Wolf.jpeg) | ![Gogeta SSJ4](Wallpapers/gogeta_ssj4.jpg) | ![Linux Friends](Wallpapers/linux-friends-4k.png) |
 | Silver Wolf | Gogeta SSJ4 | Linux Friends |
-| ![Little Nightmares](wallpapers/little-nightmares.jpg) | ![Small Memory](wallpapers/small-memory.png) | ![Survey](wallpapers/survey.jpg) |
+| ![Little Nightmares](Wallpapers/little-nightmares.jpg) | ![Small Memory](Wallpapers/small-memory.png) | ![Survey](Wallpapers/survey.jpg) |
 | Little Nightmares | Small Memory | Survey |
 
-Drop your own images into `wallpapers/` and point `wallpapers.image_path` at that folder (see [Update the paths](#4-update-the-paths)) to use them instead.
+Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at that folder (see [Update the paths](#5-update-the-paths)) to use them instead.
 
 ---
 
