@@ -1,0 +1,757 @@
+/* Aurora theme (Catppuccin Mocha) */
+
+:root {
+    /* Catppuccin Mocha palette */
+    --ctp-base:      #1e1e2e;
+    --ctp-mantle:    #181825;
+    --ctp-crust:     #11111b;
+    --ctp-surface0:  #313244;
+    --ctp-surface1:  #45475a;
+    --ctp-surface2:  #585b70;
+    --ctp-overlay0:  #6c7086;
+    --ctp-overlay1:  #7f849c;
+    --ctp-text:      #cdd6f4;
+    --ctp-subtext0:  #a6adc8;
+    --ctp-subtext1:  #bac2de;
+    --ctp-lavender:  #b4befe;
+    --ctp-blue:      #89b4fa;
+    --ctp-sapphire:  #74c7ec;
+    --ctp-sky:       #89dceb;
+    --ctp-teal:      #94e2d5;
+    --ctp-green:     #a6e3a1;
+    --ctp-yellow:    #f9e2af;
+    --ctp-peach:     #fab387;
+    --ctp-maroon:    #eba0ac;
+    --ctp-red:       #f38ba8;
+    --ctp-mauve:     #cba6f7;
+    --ctp-pink:      #f5c2e7;
+
+    /* Status colors (cpu/ram/battery/network) */
+    --state-normal:   var(--ctp-sapphire);
+    --state-medium:   var(--ctp-yellow);
+    --state-high:     var(--ctp-red);
+    --state-critical: var(--ctp-red);
+
+    /* Glass surface tokens */
+    --glass-fill:        rgba(30, 30, 46, 0.62);
+    --glass-fill-hover:  rgba(30, 30, 46, 0.88);
+    --glass-fill-strong: rgba(17, 17, 27, 0.72);
+    --glass-border:      rgba(137, 180, 250, 0.10);
+    --glass-border-hover: rgba(137, 180, 250, 0.32);
+    --glass-shadow:      0 4px 18px rgba(0, 0, 0, 0.28);
+    --glass-shadow-hover: 0 6px 24px rgba(0, 0, 0, 0.38);
+    --label-shadow:      1px 1px 3px rgba(0, 0, 0, 0.9);
+
+    /* Spacing scale (4px base) */
+    --space-1: 2px;
+    --space-2: 4px;
+    --space-3: 8px;
+    --space-4: 12px;
+    --space-5: 16px;
+    --space-6: 20px;
+
+    /* Border radius scale */
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-pill: 999px;
+
+    /* Typography scale */
+    --font-family: "JetBrainsMono NFP";
+    --font-size-xs: 11px;
+    --font-size-sm: 12px;
+    --font-size-md: 13px;
+    --font-size-lg: 15px;
+    --font-size-xl: 20px;
+    --font-weight-regular: 500;
+    --font-weight-bold: 700;
+
+    /* Motion tokens */
+    --ease: cubic-bezier(0.4, 0.0, 0.2, 1);
+    --duration-fast: 120ms;
+    --duration-med: 200ms;
+    --duration-slow: 320ms;
+}
+
+/* Reset / base */
+* {
+    font-size: var(--font-size-sm);
+    color: var(--ctp-text);
+    font-weight: var(--font-weight-regular);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 0;
+}
+
+/* Bar shell (transparent, widgets float on top) */
+.yasb-bar {
+    background-color: transparent;
+    padding: 0 var(--space-3);
+    margin: 0;
+}
+
+/* Base widget surface, shared by all pills */
+.widget {
+    background-color: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-1) var(--space-2);
+    padding: 0 var(--space-2);
+}
+
+.widget:hover {
+    background-color: var(--glass-fill-hover);
+    border-color: var(--glass-border-hover);
+}
+
+.widget .label {
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-3);
+}
+.widget .label.alt {
+    padding: var(--space-1) var(--space-4) var(--space-1) var(--space-4);
+}
+
+/* Icon size, shared across widgets */
+.icon {
+    font-size: var(--font-size-lg);
+}
+
+/* Clock + workspaces */
+
+.clock-widget {
+    background-color: var(--glass-fill-strong);
+    border: 1px solid rgba(203, 166, 247, 0.18);
+    border-radius: var(--radius-lg);
+    margin: var(--space-1) var(--space-3);
+    padding: 0 var(--space-6);
+    box-shadow: var(--glass-shadow);
+}
+.clock-widget .label {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.5px;
+    padding-left: var(--space-3);
+    color: var(--ctp-text);
+}
+.clock-widget .icon {
+    color: var(--ctp-mauve);
+    font-size: var(--font-size-lg);
+}
+
+.komorebi-workspaces {
+    background-color: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-1) var(--space-1) var(--space-1) var(--space-3);
+    padding: 0 var(--space-4);
+}
+.komorebi-workspaces .offline-status {
+    color: var(--ctp-red);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+}
+.komorebi-workspaces .ws-btn {
+    border: none;
+    background-color: var(--ctp-surface1);
+    margin: 0 var(--space-2);
+    height: 8px;
+    width: 8px;
+    border-radius: var(--radius-pill);
+    transition: background-color var(--duration-med) var(--ease),
+                width var(--duration-med) var(--ease);
+}
+.komorebi-workspaces .ws-btn:hover {
+    background-color: var(--ctp-blue);
+}
+.komorebi-workspaces .ws-btn.populated {
+    background-color: var(--ctp-lavender);
+}
+.komorebi-workspaces .ws-btn.active {
+    background-color: var(--ctp-blue);
+    width: 22px;
+}
+
+.komorebi-active-layout {
+    background-color: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-1) var(--space-5) var(--space-1) var(--space-1);
+    padding: 0 var(--space-4);
+    color: var(--ctp-teal);
+}
+
+/* Active window, utility cluster, weather */
+
+.active-window-widget {
+    background-color: transparent;
+    border: none;
+    padding: 0 var(--space-3);
+    margin-right: var(--space-5);
+}
+.active-window-widget .label {
+    color: var(--ctp-subtext0);
+}
+
+/* Utility cluster: vscode / board-status / volume / wifi */
+.vscode-widget {
+    margin: var(--space-1) var(--space-1);
+}
+.vscode-widget .icon,
+.vscode-widget .label {
+    color: var(--ctp-blue);
+    text-shadow: var(--label-shadow);
+}
+
+.board-status-widget {
+    margin: var(--space-1) var(--space-1);
+}
+.board-status-widget .label {
+    color: var(--ctp-peach);
+    font-weight: var(--font-weight-bold);
+    text-shadow: var(--label-shadow);
+}
+.board-status-widget .icon {
+    color: var(--ctp-peach);
+    text-shadow: var(--label-shadow);
+}
+
+.volume-widget {
+    margin: var(--space-1) var(--space-1);
+}
+.volume-widget .icon,
+.volume-widget .label {
+    color: var(--ctp-blue);
+    margin: var(--space-1) var(--space-2) 0 0;
+    text-shadow: var(--label-shadow);
+}
+
+.wifi-widget {
+    margin: var(--space-1) var(--space-5) var(--space-1) var(--space-1);
+}
+.wifi-widget .icon,
+.wifi-widget .label {
+    color: var(--ctp-sapphire);
+    text-shadow: var(--label-shadow);
+}
+
+.weather-widget {
+    margin: var(--space-1) var(--space-5) var(--space-1) var(--space-1);
+}
+.weather-widget .icon,
+.weather-widget .label {
+    color: var(--ctp-yellow);
+    text-shadow: var(--label-shadow);
+}
+
+.cava-widget {
+    background-color: transparent;
+    border: none;
+    margin: 0 var(--space-1);
+    padding: 0 var(--space-3);
+}
+
+/* CPU / memory / battery */
+
+.cpu-widget,
+.memory-widget,
+.battery-widget {
+    margin: var(--space-1) var(--space-1);
+}
+.memory-widget {
+    margin: var(--space-1) var(--space-5) var(--space-1) var(--space-1);
+}
+.cpu-widget .label,
+.memory-widget .label,
+.battery-widget .label {
+    text-shadow: var(--label-shadow);
+}
+
+/* Normal state */
+.cpu-widget .progress-bar,
+.cpu-widget .icon {
+    color: var(--state-normal);
+}
+.memory-widget .progress-bar,
+.memory-widget .icon {
+    color: var(--state-normal);
+}
+.battery-widget .icon {
+    color: var(--ctp-green);
+}
+
+/* Threshold states, set by cpu_thresholds/memory_thresholds in config.yaml */
+.cpu-widget.medium .progress-bar,
+.cpu-widget.medium .icon,
+.memory-widget.medium .progress-bar,
+.memory-widget.medium .icon {
+    color: var(--state-medium);
+}
+.cpu-widget.high .progress-bar,
+.cpu-widget.high .icon,
+.memory-widget.high .progress-bar,
+.memory-widget.high .icon {
+    color: var(--state-high);
+}
+
+.battery-widget.status-low .icon,
+.battery-widget.status-critical .icon {
+    color: var(--state-high);
+}
+.battery-widget.status-medium .icon {
+    color: var(--state-medium);
+}
+
+.progress-bar {
+    border-radius: var(--radius-sm);
+}
+
+.wallpapers-widget {
+    margin: var(--space-1) var(--space-3);
+}
+.wallpapers-widget .icon {
+    color: var(--ctp-sky);
+    font-size: 18px;
+}
+
+.power-menu-widget {
+    margin: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+}
+.power-menu-widget .label,
+.power-menu-widget .icon {
+    color: var(--ctp-maroon);
+    font-size: var(--font-size-lg);
+}
+
+/* Shared hover transition */
+.widget,
+.komorebi-workspaces,
+.komorebi-active-layout,
+.clock-widget,
+.wallpapers-widget,
+.power-menu-widget {
+    transition: background-color var(--duration-med) var(--ease),
+                border-color var(--duration-med) var(--ease),
+                box-shadow var(--duration-slow) var(--ease);
+    box-shadow: var(--glass-shadow);
+}
+.widget:hover,
+.komorebi-workspaces:hover,
+.komorebi-active-layout:hover,
+.wallpapers-widget:hover,
+.power-menu-widget:hover {
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* Popups: power menu, weather card, calendar */
+
+.uptime {
+    font-size: var(--font-size-md);
+    margin-bottom: var(--space-4);
+    color: rgba(191, 202, 219, 0.73);
+    font-weight: var(--font-weight-bold);
+    font-family: var(--font-family);
+}
+
+.power-menu-popup .button {
+    padding: 0;
+    width: 160px;
+    height: 240px;
+    border-radius: var(--radius-lg);
+    background-color: var(--glass-fill-strong);
+    font-family: var(--font-family);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color var(--duration-med) var(--ease),
+                border-color var(--duration-med) var(--ease);
+}
+.power-menu-popup .button.hover {
+    background-color: rgba(49, 50, 68, 0.92);
+    border: 1px solid var(--glass-border-hover);
+}
+.power-menu-popup .button .label {
+    margin-bottom: var(--space-3);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: rgba(255, 255, 255, 0.6);
+}
+.power-menu-popup .button .icon {
+    font-size: 56px;
+    padding-top: 54px;
+    color: rgba(255, 255, 255, 0.25);
+}
+.power-menu-popup .button.cancel {
+    height: 20px !important;
+    width: 100%;
+    padding-top: var(--space-3);
+    padding-bottom: var(--space-3);
+}
+.power-menu-popup .button.cancel .icon {
+    font-size: 22px !important;
+    padding-top: 0 !important;
+    color: rgba(243, 139, 168, 0.55);
+}
+.power-menu-popup .button.cancel .label {
+    margin-bottom: 0 !important;
+    color: rgba(243, 139, 168, 0.95);
+}
+
+/* WEATHER CARD */
+.weather-card {
+    background-color: var(--glass-fill-strong);
+    border-radius: var(--radius-lg);
+}
+.weather-card-today {
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    background-color: rgba(24, 24, 37, 0.3);
+}
+.weather-card-today .label {
+    font-size: var(--font-size-sm);
+}
+.weather-card-today .label.location {
+    font-size: 22px;
+    font-weight: var(--font-weight-bold);
+    color: var(--ctp-yellow);
+}
+.weather-card-today .label.alert {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    background-color: rgba(247, 199, 42, 0.05);
+    border: 1px solid rgba(247, 209, 42, 0.1);
+    color: rgba(196, 181, 162, 0.85);
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) 0;
+}
+.weather-card-day {
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    background-color: rgba(24, 24, 37, 0.3);
+    transition: background-color var(--duration-fast) var(--ease),
+                border-color var(--duration-fast) var(--ease);
+}
+.weather-card-day.active {
+    background-color: rgba(137, 180, 250, 0.12);
+    border: 1px solid var(--glass-border-hover);
+}
+.weather-card-day:hover {
+    background-color: rgba(137, 180, 250, 0.08);
+}
+.weather-card-day .label {
+    font-size: var(--font-size-sm);
+}
+.weather-card .hourly-container {
+    border: 1px solid var(--glass-border);
+    background-color: rgba(30, 30, 46, 0.9);
+    border-radius: var(--radius-md);
+    min-height: 150px;
+}
+.weather-card .hourly-data {
+    background-color: var(--ctp-blue);
+    font-size: var(--font-size-sm);
+    font-weight: bold;
+}
+
+/* Wifi popup menu */
+.wifi-menu {
+    font-family: var(--font-family);
+    background-color: var(--glass-fill-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    min-width: 340px;
+    max-height: 380px;
+    min-height: 380px;
+}
+.wifi-menu .progress-bar {
+    color: var(--ctp-sapphire);
+}
+.wifi-menu .header {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    padding: var(--space-4) var(--space-5);
+    background-color: var(--glass-fill);
+    color: var(--ctp-text);
+    border-bottom: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.wifi-menu .error-message {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    padding: var(--space-4) var(--space-5);
+    background-color: rgba(243, 139, 168, 0.15);
+    color: var(--ctp-red);
+    border-bottom: 1px solid var(--glass-border);
+}
+.wifi-menu .wifi-list {
+    background-color: transparent;
+    margin-right: var(--space-1);
+}
+.wifi-menu .wifi-item {
+    min-height: 36px;
+    padding: var(--space-1) var(--space-4);
+    margin: var(--space-1) var(--space-3);
+    border-radius: var(--radius-md);
+    transition: background-color var(--duration-med) var(--ease);
+}
+.wifi-menu .wifi-item:hover {
+    background-color: var(--glass-fill-hover);
+}
+.wifi-menu .wifi-item[active=true] {
+    background-color: rgba(116, 199, 236, 0.15);
+    border: 1px solid var(--glass-border-hover);
+    min-height: 82px;
+}
+.wifi-menu .wifi-item .icon {
+    font-family: 'Segoe Fluent Icons';
+    font-size: var(--font-size-xl);
+    margin-right: var(--space-3);
+    color: var(--ctp-sapphire);
+}
+.wifi-menu .wifi-item .name {
+    font-size: var(--font-size-md);
+    color: var(--ctp-text);
+}
+.wifi-menu .wifi-item .status,
+.wifi-menu .wifi-item .strength {
+    font-size: var(--font-size-sm);
+    color: var(--ctp-subtext0);
+}
+.wifi-menu .wifi-item .password {
+    font-family: var(--font-family);
+    background-color: transparent;
+    font-size: var(--font-size-md);
+    color: var(--ctp-text);
+}
+.wifi-menu .wifi-item .connect {
+    background-color: var(--ctp-sapphire);
+    color: var(--ctp-crust);
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-sm);
+    border: none;
+    font-weight: var(--font-weight-bold);
+}
+.wifi-menu .wifi-item .connect:hover {
+    background-color: var(--ctp-sky);
+}
+.wifi-menu .footer {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    padding: var(--space-4) var(--space-5);
+    color: var(--ctp-subtext0);
+    background-color: var(--glass-fill);
+    border-top: 1px solid var(--glass-border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.wifi-menu .footer .settings-button,
+.wifi-menu .footer .refresh-icon {
+    background-color: transparent;
+    border: none;
+    min-width: 26px;
+    min-height: 26px;
+    color: var(--ctp-text);
+    border-radius: var(--radius-sm);
+}
+.wifi-menu .footer .settings-button:hover,
+.wifi-menu .footer .refresh-icon:hover {
+    background-color: var(--glass-fill-hover);
+}
+
+/* VSCode recents popup */
+.vscode-menu {
+    font-family: var(--font-family);
+    background-color: var(--glass-fill-strong);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    min-width: 340px;
+    max-width: 340px;
+    max-height: 500px;
+}
+.vscode-menu .header {
+    padding: var(--space-4) var(--space-5);
+    background-color: var(--glass-fill);
+    border-bottom: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.vscode-menu .header .title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--ctp-text);
+}
+.vscode-menu .header .filter-button {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--ctp-subtext0);
+    transition: background-color var(--duration-med) var(--ease),
+                color var(--duration-med) var(--ease);
+}
+.vscode-menu .header .filter-button:hover {
+    color: var(--ctp-text);
+    background-color: var(--glass-fill-hover);
+}
+.vscode-menu .header .filter-button.active {
+    background-color: rgba(137, 180, 250, 0.18);
+    color: var(--ctp-blue);
+}
+.vscode-menu .search-bar {
+    padding: var(--space-3) var(--space-5);
+    background-color: transparent;
+    border-bottom: 1px solid var(--glass-border);
+}
+.vscode-menu .search-bar .input {
+    background-color: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--ctp-text);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+}
+.vscode-menu .search-bar .input:focus {
+    border-color: var(--glass-border-hover);
+}
+.vscode-menu .contents {
+    background-color: transparent;
+}
+.vscode-menu .contents .item {
+    min-height: 40px;
+    margin: var(--space-1) var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    transition: background-color var(--duration-med) var(--ease);
+}
+.vscode-menu .contents .item:hover {
+    background-color: var(--glass-fill-hover);
+}
+.vscode-menu .contents .item .title {
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-bold);
+    color: var(--ctp-text);
+}
+.vscode-menu .contents .item .modified-date {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-regular);
+    color: var(--ctp-subtext0);
+}
+.vscode-menu .contents .item .folder-icon {
+    font-family: "Segoe Fluent Icons";
+    font-size: var(--font-size-lg);
+    color: var(--ctp-blue);
+    margin-right: var(--space-3);
+}
+.vscode-menu .contents .item .file-icon {
+    font-family: "Segoe Fluent Icons";
+    font-size: var(--font-size-lg);
+    color: var(--ctp-overlay1);
+    margin-right: var(--space-3);
+}
+.vscode-menu .contents .item .remote-icon {
+    font-family: "Segoe Fluent Icons";
+    font-size: var(--font-size-lg);
+    color: var(--ctp-green);
+    margin-right: var(--space-3);
+}
+.vscode-menu .no-recent {
+    padding: var(--space-6);
+    color: var(--ctp-subtext0);
+    font-size: var(--font-size-md);
+    text-align: center;
+}
+
+/* CALENDAR */
+.calendar {
+    background-color: var(--glass-fill-strong);
+    border-radius: var(--radius-lg);
+}
+.calendar .calendar-table,
+.calendar .calendar-table::item {
+    background-color: rgba(17, 17, 27, 0);
+    color: rgba(162, 177, 196, 0.85);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+}
+.calendar .calendar-table::item:selected {
+    color: rgb(255, 255, 255);
+    background-color: var(--ctp-blue);
+    border-radius: var(--radius-md);
+}
+.calendar .day-label {
+    margin-top: var(--space-6);
+}
+.calendar .day-label,
+.calendar .month-label,
+.calendar .date-label,
+.calendar .week-label,
+.calendar .holiday-label {
+    font-family: "Segoe UI";
+    font-size: 16px;
+    color: #fff;
+    font-weight: var(--font-weight-bold);
+    min-width: 180px;
+    max-width: 180px;
+}
+.calendar .week-label,
+.calendar .holiday-label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: rgba(162, 177, 196, 0.85);
+}
+.calendar .holiday-label {
+    color: rgba(162, 177, 196, 0.85);
+    font-weight: var(--font-weight-bold);
+}
+.calendar .month-label {
+    font-weight: normal;
+}
+.calendar .date-label {
+    font-size: 84px;
+    font-weight: 900;
+    color: rgb(255, 255, 255);
+    margin-top: -20px;
+}
+
+/* GlazeWM (unused unless you switch WMs) */
+.glazewm-workspaces {
+    background-color: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-1) var(--space-2);
+    padding: 0 var(--space-3);
+}
+.glazewm-workspaces .ws-btn {
+    font-size: var(--font-size-lg);
+    background-color: transparent;
+    border: none;
+    padding: 0 var(--space-2);
+    margin: 0;
+    color: var(--ctp-overlay0);
+}
+.glazewm-workspaces .ws-btn.active_populated,
+.glazewm-workspaces .ws-btn.active_empty {
+    color: var(--ctp-blue);
+}
+.glazewm-workspaces .ws-btn.populated {
+    color: var(--ctp-sapphire);
+}
+.glazewm-workspaces .ws-btn.empty {
+    color: var(--ctp-overlay0);
+}
+.glazewm-workspaces .ws-btn:hover {
+    color: var(--ctp-blue);
+}
+.glazewm-tiling-direction {
+    background-color: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin: var(--space-1) var(--space-2);
+    padding: 0 var(--space-2);
+}
+.glazewm-tiling-direction .btn {
+    font-size: var(--font-size-lg);
+    width: 22px;
+    padding: 0 var(--space-2);
+    color: var(--ctp-yellow);
+    border-radius: var(--radius-sm);
+}
