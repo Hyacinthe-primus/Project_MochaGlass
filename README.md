@@ -109,7 +109,7 @@ Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at tha
 |---|---|---|
 | [Komorebi](https://github.com/LGUG2Z/komorebi) | Tiling window manager | LGUG2Z/komorebi |
 | [whkd](https://github.com/LGUG2Z/whkd) | Hotkey daemon used to drive Komorebi | LGUG2Z/whkd |
-| [YASB](https://github.com/AmN1988/yasb) | Status bar, control center, wallpaper widget | AmN1988/yasb |
+| [YASB](https://github.com/amnweb/yasb) | Status bar, control center, wallpaper widget | amnweb/yasb |
 | [Cava](https://github.com/karlstav/cava) | Console audio visualizer, piped into the bar | karlstav/cava |
 | [Flow Launcher](https://github.com/Flow-Launcher/Flow-Launcher) | Application launcher | Flow-Launcher/Flow-Launcher |
 | device_status.exe | Custom widget: serial boards, phones, USB drives | Included in this repo, `device_status_v1.0.0/` |
