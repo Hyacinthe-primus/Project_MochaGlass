@@ -122,7 +122,7 @@ Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at tha
 
 - Windows 10 or Windows 11
 - [Komorebi](https://github.com/LGUG2Z/komorebi) and [whkd](https://github.com/LGUG2Z/whkd) installed and on PATH
-- [YASB](https://github.com/AmN1988/yasb) installed
+- [YASB](https://github.com/amnweb/yasb) installed
 - [Cava](https://github.com/karlstav/cava) available for Windows (used by the `cava` widget)
 - [Flow Launcher](https://www.flowlauncher.com/) installed
 - [Windows Terminal](https://apps.microsoft.com/detail/9n0dx20hk701) installed (the tiling screenshots above all use it)
