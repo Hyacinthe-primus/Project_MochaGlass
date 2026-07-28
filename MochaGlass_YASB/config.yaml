@@ -87,7 +87,7 @@ widgets:
     type: "yasb.custom.CustomWidget"
     options:
       label: "{data[compact]}"
-      label_alt: "{data[count]} carte(s) connectée(s)"
+      label_alt: "{data[count]} device(s) connected"
       class_name: "board-status-widget"
       exec_options:
         run_cmd: "C:\\Users\\Username\\scripts\\device_status.dist\\device_status.exe"
