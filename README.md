@@ -150,7 +150,7 @@ You have two options.
 **Option A: use the pre-built config archive (recommended)**
 
 1. Go to the [Releases](https://github.com/Hyacinthe-primus/Project_MochaGlass/releases) page of this repository
-2. Download `.config.zip`
+2. Download `default.config.zip`
 3. Extract it directly into `C:\Users\<YourUsername>\`
 
 This produces `C:\Users\<YourUsername>\.config\yasb\` and `C:\Users\<YourUsername>\.config\cava\`.
