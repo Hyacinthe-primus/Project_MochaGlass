@@ -50,10 +50,10 @@ bars:
         "cava",
         "vscode",
         "board_status",
-        "wifi",
+        #"wifi",
         "cpu",
         "memory",
-        "battery",
+        #"battery",
         "wallpapers",
         "power_menu"
       ]
@@ -90,7 +90,7 @@ widgets:
       label_alt: "{data[count]} device(s) connected"
       class_name: "board-status-widget"
       exec_options:
-        run_cmd: "C:\\Users\\Username\\scripts\\device_status.dist\\device_status.exe"
+        run_cmd: "C:\\Users\\Username\\scripts\\device_status.exe"
         run_interval: 5000
         return_format: "json"
         use_shell: true
