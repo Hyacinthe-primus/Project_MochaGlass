@@ -6,7 +6,7 @@ A Catppuccin Mocha, glass style desktop environment for Windows, built on top of
 ![Theme](https://img.shields.io/badge/theme-Catppuccin%20Mocha-cba6f7?style=for-the-badge&logo=github&logoColor=white)
 ![WM](https://img.shields.io/badge/window%20manager-Komorebi-89b4fa?style=for-the-badge)
 ![Bar](https://img.shields.io/badge/status%20bar-YASB-f9e2af?style=for-the-badge)
-![Python](https://img.shields.io/badge/device__status-Python%203-f38ba8?style=for-the-badge&logo=python&logoColor=white)
+![Rust](https://img.shields.io/badge/device__status-Rust-f38ba8?style=for-the-badge&logo=rust&logoColor=white)
 
 [![Stars](https://img.shields.io/github/stars/Hyacinthe-primus/Project_MochaGlass?style=for-the-badge&color=cba6f7)](https://github.com/Hyacinthe-primus/Project_MochaGlass/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/Hyacinthe-primus/Project_MochaGlass?style=for-the-badge&color=94e2d5)](https://github.com/Hyacinthe-primus/Project_MochaGlass/commits)
@@ -129,7 +129,7 @@ Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at tha
 - **JetBrainsMono Nerd Font Propo** installed system wide (icons will render as boxes or blank glyphs otherwise)
 - PowerShell available as `pwsh` or `powershell` (bundled with Windows by default, used internally by `device_status.exe`)
 - A folder of wallpapers you own the rights to, for the wallpaper widget
-- Only required if you rebuild `device_status.exe` yourself instead of using the release build: Python 3.10+, `pip install nuitka pyserial`
+- Only required if you rebuild `device_status.exe` yourself instead of using the release build: Rust v1.97
 
 ## Installation
 
@@ -162,10 +162,8 @@ Copy the contents of `MochaGlass_YASB/` into `C:\Users\<YourUsername>\.config\ya
 ### 3. Get device_status.exe
 
 1. Go to the [Releases](https://github.com/Hyacinthe-primus/Project_MochaGlass/releases) page of this repository
-2. Download `device_status.dist.zip`
-3. Extract it into `C:\Users\<YourUsername>\scripts\`
-
-This produces `C:\Users\<YourUsername>\scripts\device_status.dist\device_status.exe`. Do not point YASB at a standalone `.exe` outside that folder: this is a Nuitka standalone build, and the `.exe` depends on the other files sitting next to it inside `device_status.dist\`.
+2. Download `device_status.exe`
+3. Move it into `C:\Users\<YourUsername>\scripts\`
 
 ### 4. Set up Windows Terminal
 
@@ -200,7 +198,7 @@ Open `C:\Users\<YourUsername>\.config\yasb\config.yaml` and replace the placehol
 
 | Setting | Placeholder in the repo | Replace with |
 |---|---|---|
-| `board_status.exec_options.run_cmd` | `C:\\Users\\Username\\scripts\\device_status.dist\\device_status.exe` | `C:\\Users\\<YourUsername>\\scripts\\device_status.dist\\device_status.exe` |
+| `board_status.exec_options.run_cmd` | `C:\\Users\\Username\\scripts\\device_status.exe` | `C:\\Users\\<YourUsername>\\scripts\\device_status.exe` |
 | `wallpapers.image_path` | `C:/Users/Username/Pictures/Wallpapers` | The real path to your own wallpaper folder |
 
 Both paths use backslashes for the executable and forward slashes for the wallpaper folder. Keep the same slash style when you edit them, YAML strings here are passed through as is.
@@ -213,29 +211,28 @@ Both paths use backslashes for the executable and forward slashes for the wallpa
 
 ## Building device_status from source
 
-Only needed if you want to modify `device_status.py` yourself instead of using the release build.
+Only needed if you want to modify `src/main.rs` yourself instead of using the release build.
 
-```bat
+```bash
 cd device_status_v1.0.0
-pip install nuitka pyserial
-build.bat
+cargo build --release
 ```
 
-`build.bat` reads the version from `nuitka.manifest.json`, then runs Nuitka in standalone (folder) mode, not `--onefile`. The finished build lands at:
+`build.rs` injects the Windows VERSIONINFO metadata (file description, product name, company, version) into the binary at compile time, straight from `Cargo.toml`, so there is no separate manifest step. The finished, self-contained binary lands at:
 
 ```
-device_status_v1.0.0\dist\device_status.dist\device_status.exe
+device_status_v1.0.0\target\release\device_status.exe
 ```
 
-Copy that whole `device_status.dist` folder to wherever `run_cmd` in `config.yaml` points, then repackage it as `device_status.dist.zip` if you intend to publish it as a release.
+Copy that single `.exe` to wherever `run_cmd` in `config.yaml` points, then upload it directly as a release asset if you intend to publish it.
 
 ---
 
 ## Troubleshooting
 
 - **Icons show up as boxes or missing glyphs**: JetBrainsMono Nerd Font Propo is not installed, or not set as the default in your terminal/DPI scaling. Reinstall the font and restart YASB.
-- **`board_status` widget always shows "No device"**: the path in `run_cmd` does not match where you actually extracted `device_status.dist.zip`, or the executable was moved without its sibling files.
-- **Windows flags `device_status.exe` as unrecognized (SmartScreen)**: expected for an unsigned, freshly compiled Nuitka binary. Either build it yourself from `device_status.py`, or allow it manually if you trust the release.
+- **`board_status` widget always shows "No device"**: the path in `run_cmd` does not match where you actually placed `device_status.exe`.
+- **Windows flags `device_status.exe` as unrecognized (SmartScreen)**: expected for an unsigned, freshly compiled Rust binary. Either build it yourself with `cargo build --release`, or allow it manually if you trust the release.
 - **Power menu or CPU/memory icons look wrong on Windows 10**: those widgets rely on `Segoe Fluent Icons`, which ships with Windows 11. On Windows 10 they may fall back to a different glyph set.
 - **Cava widget shows nothing**: confirm Cava itself is running and outputting to the source YASB expects; the `cava` widget in `config.yaml` only renders what Cava feeds it.
 - **Blur/glass effect not visible**: transparency and blur effects depend on Windows' own DWM settings; confirm transparency effects are enabled in Windows Settings > Personalization > Colors.
