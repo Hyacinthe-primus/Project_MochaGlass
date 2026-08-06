@@ -160,7 +160,7 @@ fn extract_vid_pid(instance_id: &str) -> (String, String) {
     (vid, pid)
 }
 
-/// Extracts a stable USB serial from the tail of a Windows instance ID.
+/// Extracts a USB serial from the tail of a Windows instance ID.
 fn extract_serial(instance_id: &str) -> Option<String> {
     let last_segment = instance_id.rsplit('\\').next()?;
     let serial = last_segment.split('&').next().unwrap_or(last_segment).trim();
@@ -169,6 +169,43 @@ fn extract_serial(instance_id: &str) -> Option<String> {
     } else {
         Some(serial.to_uppercase())
     }
+}
+
+/// Matches `serial` as a bounded token (edges: `\`, `&`, or string ends),
+/// not a raw substring — rejects serials under 6 chars, since some
+/// PNPDeviceID formats yield a degenerate near-universal fragment.
+fn serial_matches(device_id_upper: &str, serial: &str) -> bool {
+    if serial.len() < 6 {
+        return false;
+    }
+    let bytes = device_id_upper.as_bytes();
+    let mut start = 0;
+    while let Some(pos) = device_id_upper[start..].find(serial) {
+        let abs = start + pos;
+        let before_ok = abs == 0 || matches!(bytes[abs - 1], b'\\' | b'&');
+        let after = abs + serial.len();
+        let after_ok = after == bytes.len() || matches!(bytes[after], b'\\' | b'&');
+        if before_ok && after_ok {
+            return true;
+        }
+        start = abs + 1;
+    }
+    false
+}
+
+/// True if `wpd_device_id` is Windows' WPDBUSENUM wrapper around
+/// `disk_pnp_device_id` (format: `SWD\WPDBUSENUM\_??_<disk id, '\'->'#'>#{GUID}`) —
+/// i.e. the same physical disk exposed a second time as a WPD entity.
+fn wpd_wraps_disk(wpd_device_id_upper: &str, disk_pnp_device_id: &str) -> bool {
+    if !wpd_device_id_upper.starts_with("SWD\\WPDBUSENUM") {
+        return false;
+    }
+    let transformed = disk_pnp_device_id.to_uppercase().replace('\\', "#");
+    !transformed.is_empty() && wpd_device_id_upper.contains(&transformed)
+}
+
+fn debug_enabled() -> bool {
+    std::env::var("DEVICE_STATUS_DEBUG").is_ok()
 }
 
 fn detect_usb_extras() -> Vec<DeviceInfo> {
@@ -183,13 +220,11 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
         Err(_) => return out,
     };
 
-    // BusType 7 = USB, from the Storage Management namespace (more reliable
-    // than Win32_DiskDrive for drives behind a USB enclosure).
-    let usb_physical_disk_indices: HashSet<i32> = COMLibrary::new()
-        .ok()
-        .and_then(|c| {
-            WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", c).ok()
-        })
+    // BusType 7 = USB, queried from the Storage namespace (more reliable
+    // than Win32_DiskDrive.InterfaceType for drives behind a USB enclosure).
+    let usb_physical_disk_indices: HashSet<i32> =
+        WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", com_con)
+            .ok()
         .map(|storage_con| {
             #[derive(Deserialize, Debug)]
             #[serde(rename_all = "PascalCase")]
@@ -209,17 +244,73 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
         })
         .unwrap_or_default();
 
-    // Drives are indexed first so the WPD loop below can merge composite
-    // USB media (disk + WPD entries for the same device) into one entry.
+    // Drives are indexed first so the phone loop below can merge composite
+    // USB media (disk + WPD entry for the same device) into one entry.
     let mut drive_serial_index: HashMap<String, usize> = HashMap::new();
     let mut drive_letter_index: HashMap<String, usize> = HashMap::new();
     let mut drive_name_index: HashMap<String, usize> = HashMap::new();
+    let mut drive_pnpids: Vec<(String, usize)> = Vec::new();
 
     let disks: Vec<DiskDriveRow> = wmi_con
         .raw_query(
             "SELECT Model, Size, MediaType, Index, InterfaceType, PNPDeviceID FROM Win32_DiskDrive",
         )
         .unwrap_or_default();
+
+    // Disk index -> drive letter, via Win32_DiskDriveToDiskPartition and
+    // Win32_LogicalDiskToPartition, joined once in memory.
+    let disk_index_to_letter: HashMap<i32, String> = {
+        #[derive(Deserialize, Debug)]
+        struct AssocRow {
+            #[serde(rename = "Antecedent")]
+            antecedent: String,
+            #[serde(rename = "Dependent")]
+            dependent: String,
+        }
+
+        fn extract_device_id(wmi_ref: &str) -> Option<String> {
+            let key = "DeviceID=\"";
+            let start = wmi_ref.find(key)? + key.len();
+            let rest = &wmi_ref[start..];
+            let end = rest.find('"')?;
+            Some(rest[..end].replace("\\\\", "\\"))
+        }
+
+        fn extract_physical_drive_index(device_id: &str) -> Option<i32> {
+            device_id.to_uppercase().rsplit("PHYSICALDRIVE").next()?.parse().ok()
+        }
+
+        let disk_to_partition: Vec<AssocRow> = wmi_con
+            .raw_query("SELECT * FROM Win32_DiskDriveToDiskPartition")
+            .unwrap_or_default();
+
+        let mut partition_id_to_disk_index: HashMap<String, i32> = HashMap::new();
+        for row in &disk_to_partition {
+            if let (Some(disk_id), Some(part_id)) =
+                (extract_device_id(&row.antecedent), extract_device_id(&row.dependent))
+            {
+                if let Some(idx) = extract_physical_drive_index(&disk_id) {
+                    partition_id_to_disk_index.insert(part_id, idx);
+                }
+            }
+        }
+
+        let partition_to_logical: Vec<AssocRow> = wmi_con
+            .raw_query("SELECT * FROM Win32_LogicalDiskToPartition")
+            .unwrap_or_default();
+
+        let mut map: HashMap<i32, String> = HashMap::new();
+        for row in &partition_to_logical {
+            if let (Some(part_id), Some(letter)) =
+                (extract_device_id(&row.antecedent), extract_device_id(&row.dependent))
+            {
+                if let Some(&disk_idx) = partition_id_to_disk_index.get(&part_id) {
+                    map.insert(disk_idx, letter);
+                }
+            }
+        }
+        map
+    };
 
     for disk in disks {
         let is_usb = disk
@@ -247,37 +338,11 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
 
         let serial = disk.pnp_device_id.as_deref().and_then(extract_serial);
 
-        // DiskDrive -> Partition -> LogicalDisk
+        // DiskDrive -> Partition -> LogicalDisk join, built once above.
         let letter = disk
             .index
-            .and_then(|idx| {
-                let assoc_q = format!(
-                    "ASSOCIATORS OF {{Win32_DiskDrive.DeviceID='\\\\.\\PHYSICALDRIVE{}'}} \
-                     WHERE AssocClass = Win32_DiskDriveToDiskPartition",
-                    idx
-                );
-                #[derive(Deserialize)]
-                #[serde(rename_all = "PascalCase")]
-                struct PartRow {
-                    device_id: Option<String>,
-                }
-                let parts: Vec<PartRow> = wmi_con.raw_query(&assoc_q).unwrap_or_default();
-                parts.into_iter().find_map(|p| p.device_id)
-            })
-            .and_then(|part_id| {
-                let q2 = format!(
-                    "ASSOCIATORS OF {{Win32_DiskPartition.DeviceID='{}'}} \
-                     WHERE AssocClass = Win32_LogicalDiskToPartition",
-                    part_id.replace('\'', "''")
-                );
-                #[derive(Deserialize)]
-                #[serde(rename_all = "PascalCase")]
-                struct LDiskRow {
-                    device_id: Option<String>,
-                }
-                let ld: Vec<LDiskRow> = wmi_con.raw_query(&q2).unwrap_or_default();
-                ld.into_iter().find_map(|d| d.device_id)
-            })
+            .and_then(|idx| disk_index_to_letter.get(&idx))
+            .cloned()
             .unwrap_or_else(|| "?".to_string());
 
         let idx = out.len();
@@ -299,6 +364,23 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
             drive_letter_index.insert(letter.trim_end_matches('\\').to_uppercase(), idx);
         }
         drive_name_index.insert(label.trim().to_lowercase(), idx);
+        if let Some(raw_id) = disk.pnp_device_id.clone() {
+            drive_pnpids.push((raw_id, idx));
+        }
+    }
+
+    if debug_enabled() {
+        eprintln!("[debug] --- drives indexed ---");
+        for (i, d) in out.iter().enumerate() {
+            eprintln!(
+                "[debug] disk[{}] name={:?} port={:?}",
+                i, d.name, d.port
+            );
+        }
+        eprintln!("[debug] drive_serial_index: {:?}", drive_serial_index);
+        eprintln!("[debug] drive_letter_index: {:?}", drive_letter_index);
+        eprintln!("[debug] drive_name_index: {:?}", drive_name_index);
+        eprintln!("[debug] drive_pnpids: {:?}", drive_pnpids);
     }
 
     // Phones: PnPEntity filtered by class (WPD / AppleUSB)
@@ -314,22 +396,43 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
         let device_id = entry.device_id.clone().unwrap_or_default();
         let device_id_upper = device_id.to_uppercase();
 
-        // Match to an already-listed drive by serial containment, falling
-        // back to drive letter / model name.
-        let matched_idx = drive_serial_index
+        // 1) Structural match (reliable) — see wpd_wraps_disk.
+        let wrapper_hit = drive_pnpids
             .iter()
-            .find(|(serial, _)| device_id_upper.contains(serial.as_str()))
-            .map(|(_, &idx)| idx)
-            .or_else(|| {
-                let name_as_letter = friendly_name.trim().trim_end_matches('\\').to_uppercase();
-                drive_letter_index.get(&name_as_letter).copied()
-            })
-            .or_else(|| drive_name_index.get(&friendly_name.trim().to_lowercase()).copied());
+            .find(|(pnp_id, _)| wpd_wraps_disk(&device_id_upper, pnp_id))
+            .map(|&(_, idx)| idx);
+
+        // 2) Fallbacks: hardened serial containment / drive letter / model name.
+        let serial_hit = drive_serial_index
+            .iter()
+            .find(|(serial, _)| serial_matches(&device_id_upper, serial))
+            .map(|(serial, &idx)| (serial.clone(), idx));
+
+        let name_as_letter = friendly_name.trim().trim_end_matches('\\').to_uppercase();
+        let letter_hit = drive_letter_index.get(&name_as_letter).copied();
+
+        let name_key = friendly_name.trim().to_lowercase();
+        let name_hit = drive_name_index.get(&name_key).copied();
+
+        if debug_enabled() {
+            eprintln!(
+                "[debug] phone friendly_name={:?} device_id={:?} name_as_letter={:?} name_key={:?}",
+                friendly_name, device_id_upper, name_as_letter, name_key
+            );
+            eprintln!(
+                "[debug]   wrapper_hit={:?} serial_hit={:?} letter_hit={:?} name_hit={:?}",
+                wrapper_hit, serial_hit, letter_hit, name_hit
+            );
+        }
+
+        let matched_idx = wrapper_hit
+            .or_else(|| serial_hit.map(|(_, idx)| idx))
+            .or(letter_hit)
+            .or(name_hit);
 
         if let Some(idx) = matched_idx {
-            // Prefer the WPD friendly name over the raw drive letter when it
-            // adds information (e.g. a volume label vs generic model string).
-            let name_as_letter = friendly_name.trim().trim_end_matches('\\').to_uppercase();
+            // Prefer the WPD friendly name over the raw model/label when it
+            // adds information (e.g. a volume label vs a generic model string).
             let port_as_letter = out[idx].port.trim_end_matches('\\').to_uppercase();
             if !friendly_name.trim().is_empty() && name_as_letter != port_as_letter {
                 out[idx].name = friendly_name;
