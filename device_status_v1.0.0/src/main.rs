@@ -21,7 +21,7 @@ fn boards() -> HashMap<(u16, u16), BoardInfo> {
     );
     m.insert(
         (0x2341, 0x0043),
-        BoardInfo { name: "Arduino Uno", icon: "\u{e266}", color: "#89b4fa" },
+        BoardInfo { name: "Arduino Uno", icon: "\u{f2db}", color: "#89b4fa" },
     );
     m
 }
@@ -31,7 +31,7 @@ const DEFAULT_COLOR: &str = "#cdd6f4";
 
 fn phone_style(kind: &str) -> (&'static str, &'static str) {
     match kind {
-        "iphone" => ("\u{f8ff}", "#f38ba8"),
+        "iphone" => ("\u{f179}", "#f38ba8"),
         _ => ("\u{e70e}", "#a6e3a1"),
     }
 }
@@ -90,6 +90,21 @@ struct DiskDriveRow {
     pnp_device_id: Option<String>,
 }
 
+/// Some Windows USB driver stacks (notably CH340/CH343-based Arduino clones)
+/// return a `product` string from the descriptor that already has the COM
+/// port baked in, e.g. `"Arduino Mega 2560 (COM6)"`. Since `main()` appends
+/// `" ({port})"` itself when building the display label, an unstripped name
+/// here causes the port to show up twice. Strip it if present so the name
+/// is always port-free going into `DeviceInfo`.
+fn strip_trailing_port(name: &str, port: &str) -> String {
+    let suffix = format!("({})", port);
+    let trimmed = name.trim_end();
+    trimmed
+        .strip_suffix(&suffix)
+        .map(|s| s.trim_end().to_string())
+        .unwrap_or_else(|| trimmed.to_string())
+}
+
 fn resolve_serial_ports() -> Vec<DeviceInfo> {
     let table = boards();
     let mut out = Vec::new();
@@ -109,6 +124,7 @@ fn resolve_serial_ports() -> Vec<DeviceInfo> {
                 .map(|b| b.name.to_string())
                 .or_else(|| usb.product.clone())
                 .unwrap_or_else(|| "Unknown board".to_string());
+            let name = strip_trailing_port(&name, &p.port_name);
             let icon = known.map(|b| b.icon).unwrap_or(DEFAULT_ICON).to_string();
             let color = known.map(|b| b.color).unwrap_or(DEFAULT_COLOR).to_string();
 
@@ -430,9 +446,30 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
             .or(letter_hit)
             .or(name_hit);
 
+        // Fallback: a WPD entry whose friendly_name is exactly the generic
+        // classify_phone() default, with no structural/string match, is
+        // almost certainly a ghost MTP responder for an already-listed
+        // drive, not a real phone (real devices report actual model names).
+        let matched_idx = matched_idx.or_else(|| {
+            let is_generic_default = friendly_name.trim().eq_ignore_ascii_case("android")
+                || friendly_name.trim().eq_ignore_ascii_case("iphone");
+            if is_generic_default && !out.is_empty() {
+                if debug_enabled() {
+                    eprintln!(
+                        "[debug]   generic_fallback_hit -> merging into out[{}] ({:?})",
+                        out.len() - 1,
+                        out[out.len() - 1].name
+                    );
+                }
+                Some(out.len() - 1)
+            } else {
+                None
+            }
+        });
+
         if let Some(idx) = matched_idx {
-            // Prefer the WPD friendly name over the raw model/label when it
-            // adds information (e.g. a volume label vs a generic model string).
+            // Prefer the WPD friendly name (matches what Explorer shows,
+            // even for generic values like "android") over the raw disk model.
             let port_as_letter = out[idx].port.trim_end_matches('\\').to_uppercase();
             if !friendly_name.trim().is_empty() && name_as_letter != port_as_letter {
                 out[idx].name = friendly_name;
