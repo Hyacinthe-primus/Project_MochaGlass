@@ -240,7 +240,7 @@ Copy that single `.exe` to wherever `run_cmd` in `config.yaml` points, then uplo
 ## Credits
 
 - [Komorebi](https://github.com/LGUG2Z/komorebi) and [whkd](https://github.com/LGUG2Z/whkd) by LGUG2Z
-- [YASB](https://github.com/AmN1988/yasb)
+- [YASB](https://github.com/amnweb/yasb)
 - [Cava](https://github.com/karlstav/cava) by karlstav
 - [Flow Launcher](https://github.com/Flow-Launcher/Flow-Launcher)
 - [Catppuccin](https://github.com/catppuccin/catppuccin) for the Mocha color palette
