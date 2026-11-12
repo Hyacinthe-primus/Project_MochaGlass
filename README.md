@@ -8,6 +8,9 @@ A Catppuccin Mocha, glass-style desktop setup for Windows, built on top of Komor
 ![Bar](https://img.shields.io/badge/status%20bar-YASB-f9e2af?style=for-the-badge)
 ![Rust](https://img.shields.io/badge/device__status-Rust-f38ba8?style=for-the-badge&logo=rust&logoColor=white)
 
+[![Build device_status](https://img.shields.io/github/actions/workflow/status/Hyacinthe-primus/MochaGlass/ci.yml?branch=main&style=for-the-badge&label=build)](https://github.com/Hyacinthe-primus/MochaGlass/actions/workflows/ci.yml)
+[![Validate](https://img.shields.io/github/actions/workflow/status/Hyacinthe-primus/MochaGlass/validate.yml?branch=main&style=for-the-badge&label=validate)](https://github.com/Hyacinthe-primus/MochaGlass/actions/workflows/validate.yml)
+
 [![Stars](https://img.shields.io/github/stars/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=cba6f7)](https://github.com/Hyacinthe-primus/MochaGlass/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=94e2d5)](https://github.com/Hyacinthe-primus/MochaGlass/commits)
 [![Latest release](https://img.shields.io/github/v/release/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=f9e2af)](https://github.com/Hyacinthe-primus/MochaGlass/releases)
