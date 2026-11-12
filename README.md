@@ -1,6 +1,6 @@
 # MochaGlass
 
-A Catppuccin Mocha, glass style desktop environment for Windows, built on top of Komorebi (tiling window manager), YASB (status bar), Cava (audio visualizer), and Flow Launcher, with a custom native widget for monitoring connected serial boards, phones, and USB drives.
+A Catppuccin Mocha, glass-style desktop setup for Windows, built on top of Komorebi (tiling window manager), YASB (status bar), Cava (audio visualizer), and Flow Launcher, with a custom native widget for monitoring connected serial boards, phones, and USB drives.
 
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?style=for-the-badge&logo=windows11&logoColor=white)
 ![Theme](https://img.shields.io/badge/theme-Catppuccin%20Mocha-cba6f7?style=for-the-badge&logo=github&logoColor=white)
@@ -8,10 +8,10 @@ A Catppuccin Mocha, glass style desktop environment for Windows, built on top of
 ![Bar](https://img.shields.io/badge/status%20bar-YASB-f9e2af?style=for-the-badge)
 ![Rust](https://img.shields.io/badge/device__status-Rust-f38ba8?style=for-the-badge&logo=rust&logoColor=white)
 
-[![Stars](https://img.shields.io/github/stars/Hyacinthe-primus/Project_MochaGlass?style=for-the-badge&color=cba6f7)](https://github.com/Hyacinthe-primus/Project_MochaGlass/stargazers)
-[![Last commit](https://img.shields.io/github/last-commit/Hyacinthe-primus/Project_MochaGlass?style=for-the-badge&color=94e2d5)](https://github.com/Hyacinthe-primus/Project_MochaGlass/commits)
-[![Latest release](https://img.shields.io/github/v/release/Hyacinthe-primus/Project_MochaGlass?style=for-the-badge&color=f9e2af)](https://github.com/Hyacinthe-primus/Project_MochaGlass/releases)
-[![Issues](https://img.shields.io/github/issues/Hyacinthe-primus/Project_MochaGlass?style=for-the-badge&color=f38ba8)](https://github.com/Hyacinthe-primus/Project_MochaGlass/issues)
+[![Stars](https://img.shields.io/github/stars/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=cba6f7)](https://github.com/Hyacinthe-primus/MochaGlass/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=94e2d5)](https://github.com/Hyacinthe-primus/MochaGlass/commits)
+[![Latest release](https://img.shields.io/github/v/release/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=f9e2af)](https://github.com/Hyacinthe-primus/MochaGlass/releases)
+[![Issues](https://img.shields.io/github/issues/Hyacinthe-primus/MochaGlass?style=for-the-badge&color=f38ba8)](https://github.com/Hyacinthe-primus/MochaGlass/issues)
 [![License](https://img.shields.io/badge/license-MIT-a6e3a1?style=for-the-badge)](LICENSE.md)
 
 ---
@@ -33,7 +33,7 @@ A Catppuccin Mocha, glass style desktop environment for Windows, built on top of
   - [2. Get the config files](#2-get-the-config-files)
   - [3. Get device_status.exe](#3-get-device_statusexe)
   - [4. Set up Windows Terminal](#4-set-up-windows-terminal)
-  - [5. Update the paths](#5-update-the-paths)
+  - [5. Update the placeholders](#5-update-the-placeholders)
   - [6. Restart the bar](#6-restart-the-bar)
 - [Building device_status from source](#building-device_status-from-source)
 - [Troubleshooting](#troubleshooting)
@@ -66,7 +66,7 @@ Everything is themed consistently: same accent colors, same blur and rounded cor
 
 ![YASB Bar](Screenshots/YASB_bar.png)
 
-The bar shown above includes the workspace indicator, active window title, clock, weather, Cava visualizer, VS Code widget, the custom device status widget, wifi, CPU, memory, battery, wallpaper picker, and power menu.
+The bar shown above includes the workspace indicator, active window title, clock, weather, Cava visualizer, VS Code widget, the custom device status widget, CPU, memory, wallpaper picker, and power menu. Wi-Fi and battery are defined in `config.yaml` but commented out of the default layout; uncomment them if your machine reports them.
 
 ### Control Center
 
@@ -99,7 +99,7 @@ The set currently cycled by the `wallpapers` widget, stored in `Wallpapers/`.
 | ![Little Nightmares](Wallpapers/little-nightmares.jpg) | ![Small Memory](Wallpapers/small-memory.png) | ![Survey](Wallpapers/survey.jpg) |
 | Little Nightmares | Small Memory | Survey |
 
-Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at that folder (see [Update the paths](#5-update-the-paths)) to use them instead.
+Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at that folder (see [Update the placeholders](#5-update-the-placeholders)) to use them instead.
 
 ---
 
@@ -112,7 +112,7 @@ Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at tha
 | [YASB](https://github.com/amnweb/yasb) | Status bar, control center, wallpaper widget | amnweb/yasb |
 | [Cava](https://github.com/karlstav/cava) | Console audio visualizer, piped into the bar | karlstav/cava |
 | [Flow Launcher](https://github.com/Flow-Launcher/Flow-Launcher) | Application launcher | Flow-Launcher/Flow-Launcher |
-| device_status.exe | Custom widget: serial boards, phones, USB drives | Included in this repo, `device_status_v1.0.0/` |
+| device_status.exe | Custom widget: serial boards, phones, USB drives | Included in this repo, `device_status/` |
 | Windows Terminal | Terminal, themed to match the rest of the setup | Included in this repo, `MochaGlass_Terminal/` |
 | [JetBrainsMono Nerd Font Propo](https://github.com/ryanoasis/nerd-fonts) | Icon font used across the bar and launcher | ryanoasis/nerd-fonts |
 
@@ -129,7 +129,7 @@ Drop your own images into `Wallpapers/` and point `wallpapers.image_path` at tha
 - **JetBrainsMono Nerd Font Propo** installed system wide (icons will render as boxes or blank glyphs otherwise)
 - PowerShell available as `pwsh` or `powershell` (bundled with Windows by default, used internally by `device_status.exe`)
 - A folder of wallpapers you own the rights to, for the wallpaper widget
-- Only required if you rebuild `device_status.exe` yourself instead of using the release build: Rust v1.97
+- Only required if you rebuild `device_status.exe` yourself instead of using the release build: Rust 1.97 or newer
 
 ## Installation
 
@@ -140,7 +140,7 @@ Install Komorebi, whkd, YASB, Cava, and Flow Launcher first, following each proj
 Then get a copy of this repository:
 
 ```bash
-git clone https://github.com/Hyacinthe-primus/Project_MochaGlass.git
+git clone https://github.com/Hyacinthe-primus/MochaGlass.git
 ```
 
 ### 2. Get the config files
@@ -149,7 +149,7 @@ You have two options.
 
 **Option A: use the pre-built config archive (recommended)**
 
-1. Go to the [Releases](https://github.com/Hyacinthe-primus/Project_MochaGlass/releases) page of this repository
+1. Go to the [Releases](https://github.com/Hyacinthe-primus/MochaGlass/releases) page of this repository
 2. Download `default.config.zip`
 3. Extract it directly into `C:\Users\<YourUsername>\`
 
@@ -161,13 +161,13 @@ Copy the contents of `MochaGlass_YASB/` into `C:\Users\<YourUsername>\.config\ya
 
 ### 3. Get device_status.exe
 
-1. Go to the [Releases](https://github.com/Hyacinthe-primus/Project_MochaGlass/releases) page of this repository
+1. Go to the [Releases](https://github.com/Hyacinthe-primus/MochaGlass/releases) page of this repository
 2. Download `device_status.exe`
 3. Move it into `C:\Users\<YourUsername>\scripts\`
 
 ### 4. Set up Windows Terminal
 
-The Windows Terminal settings in `MochaGlass_Terminal/settings.json` add the Catppuccin Mocha color scheme, the JetBrainsMono Nerd Font, and the acrylic/padding look used in every screenshot above. It only ships with profiles that exist on a stock Windows install (Windows PowerShell, Command Prompt, PowerShell 7, Azure Cloud Shell, Visual Studio, WSL/Ubuntu), nothing hardcoded to a specific machine or username.
+The Windows Terminal settings in `MochaGlass_Terminal/settings.json` add the Catppuccin Mocha color scheme, the JetBrainsMono Nerd Font, and the translucent/padding look used in every screenshot above. It only ships with profiles that exist on a stock Windows install (Windows PowerShell, Command Prompt, PowerShell 7, Azure Cloud Shell, Visual Studio, WSL/Ubuntu), nothing hardcoded to a specific machine or username.
 
 1. Open Windows Terminal, then Settings, then click **Open JSON file** (or press `Ctrl+Shift+,`) to find your own `settings.json`, usually at:
    ```
@@ -192,16 +192,20 @@ The Windows Terminal settings in `MochaGlass_Terminal/settings.json` add the Cat
 
 This is left out of the shipped `settings.json` on purpose since not everyone has ESP-IDF installed, and the original version hardcoded one specific username and tool path.
 
-### 5. Update the paths
+### 5. Update the placeholders
 
-Open `C:\Users\<YourUsername>\.config\yasb\config.yaml` and replace the placeholder paths with your real ones:
+Open `C:\Users\<YourUsername>\.config\yasb\config.yaml` and replace the placeholder values with your real ones:
 
 | Setting | Placeholder in the repo | Replace with |
 |---|---|---|
 | `board_status.exec_options.run_cmd` | `C:\\Users\\Username\\scripts\\device_status.exe` | `C:\\Users\\<YourUsername>\\scripts\\device_status.exe` |
+| `weather.api_key` | `YOUR_OPENWEATHERMAP_API_KEY` | Your own OpenWeatherMap API key |
+| `weather.location` | `Your_City_Name` | Your city name, or `lat,lon` coordinates |
 | `wallpapers.image_path` | `C:/Users/Username/Pictures/Wallpapers` | The real path to your own wallpaper folder |
 
-Both paths use backslashes for the executable and forward slashes for the wallpaper folder. Keep the same slash style when you edit them, YAML strings here are passed through as is.
+The two paths use backslashes for the executable and forward slashes for the wallpaper folder. Keep the same slash style when you edit them, YAML strings here are passed through as is.
+
+Weather is optional. If you don't want it, remove `weather` from the `right` list under `bars.primary-bar.widgets` instead of filling in the API key.
 
 ### 6. Restart the bar
 
@@ -214,14 +218,14 @@ Both paths use backslashes for the executable and forward slashes for the wallpa
 Only needed if you want to modify `src/main.rs` yourself instead of using the release build.
 
 ```bash
-cd device_status_v1.0.0
+cd device_status
 cargo build --release
 ```
 
 `build.rs` injects the Windows VERSIONINFO metadata (file description, product name, company, version) into the binary at compile time, straight from `Cargo.toml`, so there is no separate manifest step. The finished, self-contained binary lands at:
 
 ```
-device_status_v1.0.0\target\release\device_status.exe
+device_status\target\release\device_status.exe
 ```
 
 Copy that single `.exe` to wherever `run_cmd` in `config.yaml` points, then upload it directly as a release asset if you intend to publish it.
