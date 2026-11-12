@@ -17,11 +17,19 @@ fn boards() -> HashMap<(u16, u16), BoardInfo> {
     let mut m = HashMap::new();
     m.insert(
         (0x1A86, 0x55D3),
-        BoardInfo { name: "ESP32-S3", icon: "\u{ec19}", color: "#f9e2af" },
+        BoardInfo {
+            name: "ESP32-S3",
+            icon: "\u{ec19}",
+            color: "#f9e2af",
+        },
     );
     m.insert(
         (0x2341, 0x0043),
-        BoardInfo { name: "Arduino Uno", icon: "\u{f2db}", color: "#89b4fa" },
+        BoardInfo {
+            name: "Arduino Uno",
+            icon: "\u{f2db}",
+            color: "#89b4fa",
+        },
     );
     m
 }
@@ -179,7 +187,11 @@ fn extract_vid_pid(instance_id: &str) -> (String, String) {
 /// Extracts a USB serial from the tail of a Windows instance ID.
 fn extract_serial(instance_id: &str) -> Option<String> {
     let last_segment = instance_id.rsplit('\\').next()?;
-    let serial = last_segment.split('&').next().unwrap_or(last_segment).trim();
+    let serial = last_segment
+        .split('&')
+        .next()
+        .unwrap_or(last_segment)
+        .trim();
     if serial.is_empty() {
         None
     } else {
@@ -231,7 +243,7 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
         Ok(c) => c,
         Err(_) => return out,
     };
-    let wmi_con = match WMIConnection::new(com_con.into()) {
+    let wmi_con = match WMIConnection::new(com_con) {
         Ok(c) => c,
         Err(_) => return out,
     };
@@ -241,24 +253,24 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
     let usb_physical_disk_indices: HashSet<i32> =
         WMIConnection::with_namespace_path("ROOT\\Microsoft\\Windows\\Storage", com_con)
             .ok()
-        .map(|storage_con| {
-            #[derive(Deserialize, Debug)]
-            #[serde(rename_all = "PascalCase")]
-            struct PhysicalDiskRow {
-                #[serde(default)]
-                device_id: Option<String>,
-                #[serde(default)]
-                bus_type: Option<u16>,
-            }
-            let rows: Vec<PhysicalDiskRow> = storage_con
-                .raw_query("SELECT DeviceId, BusType FROM MSFT_PhysicalDisk")
-                .unwrap_or_default();
-            rows.into_iter()
-                .filter(|r| r.bus_type == Some(7))
-                .filter_map(|r| r.device_id.and_then(|s| s.trim().parse::<i32>().ok()))
-                .collect()
-        })
-        .unwrap_or_default();
+            .map(|storage_con| {
+                #[derive(Deserialize, Debug)]
+                #[serde(rename_all = "PascalCase")]
+                struct PhysicalDiskRow {
+                    #[serde(default)]
+                    device_id: Option<String>,
+                    #[serde(default)]
+                    bus_type: Option<u16>,
+                }
+                let rows: Vec<PhysicalDiskRow> = storage_con
+                    .raw_query("SELECT DeviceId, BusType FROM MSFT_PhysicalDisk")
+                    .unwrap_or_default();
+                rows.into_iter()
+                    .filter(|r| r.bus_type == Some(7))
+                    .filter_map(|r| r.device_id.and_then(|s| s.trim().parse::<i32>().ok()))
+                    .collect()
+            })
+            .unwrap_or_default();
 
     // Drives are indexed first so the phone loop below can merge composite
     // USB media (disk + WPD entry for the same device) into one entry.
@@ -293,7 +305,12 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
         }
 
         fn extract_physical_drive_index(device_id: &str) -> Option<i32> {
-            device_id.to_uppercase().rsplit("PHYSICALDRIVE").next()?.parse().ok()
+            device_id
+                .to_uppercase()
+                .rsplit("PHYSICALDRIVE")
+                .next()?
+                .parse()
+                .ok()
         }
 
         let disk_to_partition: Vec<AssocRow> = wmi_con
@@ -302,9 +319,10 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
 
         let mut partition_id_to_disk_index: HashMap<String, i32> = HashMap::new();
         for row in &disk_to_partition {
-            if let (Some(disk_id), Some(part_id)) =
-                (extract_device_id(&row.antecedent), extract_device_id(&row.dependent))
-            {
+            if let (Some(disk_id), Some(part_id)) = (
+                extract_device_id(&row.antecedent),
+                extract_device_id(&row.dependent),
+            ) {
                 if let Some(idx) = extract_physical_drive_index(&disk_id) {
                     partition_id_to_disk_index.insert(part_id, idx);
                 }
@@ -317,9 +335,10 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
 
         let mut map: HashMap<i32, String> = HashMap::new();
         for row in &partition_to_logical {
-            if let (Some(part_id), Some(letter)) =
-                (extract_device_id(&row.antecedent), extract_device_id(&row.dependent))
-            {
+            if let (Some(part_id), Some(letter)) = (
+                extract_device_id(&row.antecedent),
+                extract_device_id(&row.dependent),
+            ) {
                 if let Some(&disk_idx) = partition_id_to_disk_index.get(&part_id) {
                     map.insert(disk_idx, letter);
                 }
@@ -347,7 +366,10 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
             .map(|b| format!("{:.1} GB", b as f64 / 1_073_741_824.0))
             .unwrap_or_else(|| "?".to_string());
 
-        let label = disk.model.clone().unwrap_or_else(|| "USB Drive".to_string());
+        let label = disk
+            .model
+            .clone()
+            .unwrap_or_else(|| "USB Drive".to_string());
         let media_type = disk.media_type.clone();
         let kind = classify_drive(media_type.as_deref());
         let (icon, color) = drive_style(kind);
@@ -388,10 +410,7 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
     if debug_enabled() {
         eprintln!("[debug] --- drives indexed ---");
         for (i, d) in out.iter().enumerate() {
-            eprintln!(
-                "[debug] disk[{}] name={:?} port={:?}",
-                i, d.name, d.port
-            );
+            eprintln!("[debug] disk[{}] name={:?} port={:?}", i, d.name, d.port);
         }
         eprintln!("[debug] drive_serial_index: {:?}", drive_serial_index);
         eprintln!("[debug] drive_letter_index: {:?}", drive_letter_index);
@@ -408,7 +427,10 @@ fn detect_usb_extras() -> Vec<DeviceInfo> {
         .unwrap_or_default();
 
     for entry in phones {
-        let friendly_name = entry.name.clone().unwrap_or_else(|| "Unknown device".to_string());
+        let friendly_name = entry
+            .name
+            .clone()
+            .unwrap_or_else(|| "Unknown device".to_string());
         let device_id = entry.device_id.clone().unwrap_or_default();
         let device_id_upper = device_id.to_uppercase();
 
@@ -523,7 +545,10 @@ fn get_usb_extras_throttled() -> Vec<DeviceInfo> {
     }
 
     let devices = detect_usb_extras();
-    let cache = Cache { timestamp: now, devices: devices.clone() };
+    let cache = Cache {
+        timestamp: now,
+        devices: devices.clone(),
+    };
     if let Ok(json) = serde_json::to_string(&cache) {
         let _ = fs::write(cache_path(), json);
     }
@@ -551,7 +576,14 @@ fn main() {
 
         let compact = devices
             .iter()
-            .map(|d| format!("<span style='color:{}'>{} {}</span>", d.color, d.icon, label(d)))
+            .map(|d| {
+                format!(
+                    "<span style='color:{}'>{} {}</span>",
+                    d.color,
+                    d.icon,
+                    label(d)
+                )
+            })
             .collect::<Vec<_>>()
             .join(" \u{2022} ");
 
@@ -570,7 +602,11 @@ fn main() {
             .collect::<Vec<_>>()
             .join("\n\n");
 
-        Output { compact, count: devices.len(), tooltip }
+        Output {
+            compact,
+            count: devices.len(),
+            tooltip,
+        }
     };
 
     println!("{}", serde_json::to_string(&out).unwrap());
