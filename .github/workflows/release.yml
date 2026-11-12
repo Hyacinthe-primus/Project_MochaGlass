@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to publish (for example v1.0.3)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  widget:
+    name: Build device_status
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: device_status
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: device_status
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: widget
+          path: device_status/target/release/device_status.exe
+          if-no-files-found: error
+
+  config:
+    name: Package configs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - name: Build default.config.zip
+        run: |
+          set -euo pipefail
+          stage="$RUNNER_TEMP/config"
+          mkdir -p "$stage/.config/yasb" "$stage/.config/cava"
+          cp -R MochaGlass_YASB/. "$stage/.config/yasb/"
+          cp MochaGlass_Cava/config "$stage/.config/cava/config"
+          (cd "$stage" && zip -9 -r "$GITHUB_WORKSPACE/default.config.zip" .config)
+
+      - name: Verify archive layout
+        run: |
+          set -euo pipefail
+          unzip -Z1 default.config.zip
+          unzip -Z1 default.config.zip | grep -qx '.config/yasb/config.yaml'
+          unzip -Z1 default.config.zip | grep -qx '.config/yasb/styles.css'
+          unzip -Z1 default.config.zip | grep -qx '.config/cava/config'
+
+      - name: Upload config archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: config
+          path: default.config.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: [widget, config]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download assets
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        working-directory: dist
+        run: sha256sum device_status.exe default.config.zip > SHA256SUMS.txt
+
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${{ github.repository }}/git/ref/tags/$TAG" >/dev/null
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --title "MochaGlass $TAG" --generate-notes
+          gh release upload "$TAG" dist/* --clobber

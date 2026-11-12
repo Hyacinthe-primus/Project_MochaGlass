@@ -1,0 +1,75 @@
+name: Build device_status
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "device_status/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "device_status/**"
+      - ".github/workflows/ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build device_status (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: device_status
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: device_status
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --release -- -D warnings
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Smoke test the JSON contract
+        shell: pwsh
+        run: |
+          $json = & .\target\release\device_status.exe | ConvertFrom-Json
+          if ($null -eq $json.count) {
+            throw "device_status did not emit the expected JSON object"
+          }
+          "device_status reports $($json.count) connected device(s)"
+
+      - name: Show binary metadata
+        shell: pwsh
+        run: |
+          $exe = Get-Item .\target\release\device_status.exe
+          $exe.VersionInfo | Format-List FileDescription, ProductName, FileVersion
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: device_status-windows
+          path: device_status/target/release/device_status.exe
+          if-no-files-found: error
+          retention-days: 14

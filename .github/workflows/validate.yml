@@ -1,0 +1,80 @@
+name: Validate
+
+on:
+  push:
+    paths:
+      - "MochaGlass_YASB/**"
+      - "MochaGlass_Cava/**"
+      - "MochaGlass_Terminal/**"
+      - "README.md"
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - "MochaGlass_YASB/**"
+      - "MochaGlass_Cava/**"
+      - "MochaGlass_Terminal/**"
+      - "README.md"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate configs and docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+
+      - name: Parse YAML and JSON
+        run: |
+          python3 - <<'PY'
+          import json
+          import pathlib
+          import sys
+          import yaml
+
+          errors = []
+          for path in pathlib.Path(".").rglob("*"):
+              if not path.is_file() or ".git" in path.parts:
+                  continue
+              try:
+                  if path.suffix in {".yaml", ".yml"}:
+                      yaml.safe_load(path.read_text(encoding="utf-8"))
+                  elif path.suffix == ".json":
+                      json.loads(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  errors.append(f"{path}: {exc}")
+
+          if errors:
+              sys.exit("\n".join(errors))
+          print("YAML and JSON parsed successfully")
+          PY
+
+      - name: Check local README links
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+          from urllib.parse import unquote
+
+          readme = pathlib.Path("README.md").read_text(encoding="utf-8")
+          missing = []
+          for target in re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", readme):
+              if target.startswith(("http://", "https://", "#", "mailto:")):
+                  continue
+              path = unquote(target.split("#", 1)[0])
+              if path and not pathlib.Path(path).exists():
+                  missing.append(target)
+
+          if missing:
+              sys.exit("Missing local files:\n" + "\n".join(missing))
+          print("All local README links resolve")
+          PY
