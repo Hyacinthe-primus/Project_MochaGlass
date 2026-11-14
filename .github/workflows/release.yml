@@ -119,6 +119,7 @@ jobs:
         run: |
           set -euo pipefail
           gh api "repos/${{ github.repository }}/git/ref/tags/$TAG" >/dev/null
-          gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" --title "MochaGlass $TAG" --generate-notes
-          gh release upload "$TAG" dist/* --clobber
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" \
+              --title "MochaGlass $TAG" --generate-notes
+          gh release upload "$TAG" dist/* -R "$GITHUB_REPOSITORY" --clobber
