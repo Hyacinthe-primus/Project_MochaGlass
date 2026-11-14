@@ -1,5 +1,7 @@
 .config/
 device_status.exe
 .config.zip
+default.config.zip
 device_status/target/
 Social-preview.jpg
+.vscode/

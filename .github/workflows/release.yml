@@ -64,9 +64,15 @@ jobs:
           set -euo pipefail
           stage="$RUNNER_TEMP/config"
           mkdir -p "$stage/.config/yasb" "$stage/.config/cava"
+          mkdir -p "$stage/AppData/Roaming/FlowLauncher/Themes"
           cp -R MochaGlass_YASB/. "$stage/.config/yasb/"
           cp MochaGlass_Cava/config "$stage/.config/cava/config"
-          (cd "$stage" && zip -9 -r "$GITHUB_WORKSPACE/default.config.zip" .config)
+          cp MochaGlass_Komorebi/komorebi.json "$stage/komorebi.json"
+          cp MochaGlass_Komorebi/whkdrc "$stage/.config/whkdrc"
+          cp MochaGlass_FlowLauncher/TranslucentFlow.xaml \
+            "$stage/AppData/Roaming/FlowLauncher/Themes/TranslucentFlow.xaml"
+          (cd "$stage" && zip -9 -r "$GITHUB_WORKSPACE/default.config.zip" \
+            .config komorebi.json AppData)
 
       - name: Verify archive layout
         run: |
@@ -75,6 +81,11 @@ jobs:
           unzip -Z1 default.config.zip | grep -qx '.config/yasb/config.yaml'
           unzip -Z1 default.config.zip | grep -qx '.config/yasb/styles.css'
           unzip -Z1 default.config.zip | grep -qx '.config/cava/config'
+          unzip -Z1 default.config.zip | grep -qx '.config/whkdrc'
+          unzip -Z1 default.config.zip | grep -qx 'komorebi.json'
+          unzip -Z1 default.config.zip | grep -qx 'AppData/Roaming/FlowLauncher/Themes/TranslucentFlow.xaml'
+          unzip -p default.config.zip .config/yasb/config.yaml | grep -q 'device(s) connected'
+          ! unzip -p default.config.zip .config/yasb/config.yaml | grep -q 'carte(s)'
 
       - name: Upload config archive
         uses: actions/upload-artifact@v7

@@ -5,6 +5,8 @@ on:
     paths:
       - "MochaGlass_YASB/**"
       - "MochaGlass_Cava/**"
+      - "MochaGlass_Komorebi/**"
+      - "MochaGlass_FlowLauncher/**"
       - "MochaGlass_Terminal/**"
       - "README.md"
       - ".github/workflows/**"
@@ -12,6 +14,8 @@ on:
     paths:
       - "MochaGlass_YASB/**"
       - "MochaGlass_Cava/**"
+      - "MochaGlass_Komorebi/**"
+      - "MochaGlass_FlowLauncher/**"
       - "MochaGlass_Terminal/**"
       - "README.md"
       - ".github/workflows/**"
@@ -32,12 +36,13 @@ jobs:
       - name: Install PyYAML
         run: python3 -m pip install --quiet pyyaml
 
-      - name: Parse YAML and JSON
+      - name: Parse YAML, JSON and XAML
         run: |
           python3 - <<'PY'
           import json
           import pathlib
           import sys
+          import xml.etree.ElementTree as ET
           import yaml
 
           errors = []
@@ -49,12 +54,14 @@ jobs:
                       yaml.safe_load(path.read_text(encoding="utf-8"))
                   elif path.suffix == ".json":
                       json.loads(path.read_text(encoding="utf-8"))
+                  elif path.suffix == ".xaml":
+                      ET.parse(path)
               except Exception as exc:
                   errors.append(f"{path}: {exc}")
 
           if errors:
               sys.exit("\n".join(errors))
-          print("YAML and JSON parsed successfully")
+          print("YAML, JSON and XAML parsed successfully")
           PY
 
       - name: Check local README links
